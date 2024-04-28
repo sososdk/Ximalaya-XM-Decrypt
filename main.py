@@ -6,8 +6,6 @@ import pathlib
 import os
 import glob
 import mutagen
-import tkinter as tk
-from tkinter import filedialog
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from mutagen.easyid3 import ID3
@@ -140,7 +138,7 @@ def find_ext(data):
     raise Exception(f"unexpected format {value}")
 
 
-def decrypt_xm_file(from_file, output_path='./output'):
+def decrypt_xm_file(from_file, output_path):
     print(f"正在解密{from_file}")
     data = read_file(from_file)
     info, audio_data = xm_decrypt(data)
@@ -168,22 +166,6 @@ def replace_invalid_chars(name):
     return name
 
 
-def select_file():
-    root = tk.Tk()
-    root.withdraw()
-    file_path = filedialog.askopenfilename()
-    root.destroy()
-    return file_path
-
-
-def select_directory():
-    root = tk.Tk()
-    root.withdraw()
-    directory_path = filedialog.askdirectory()
-    root.destroy()
-    return directory_path
-
-
 if __name__ == "__main__":
     while True:
         print("欢迎使用喜马拉雅音频解密工具")
@@ -195,27 +177,46 @@ if __name__ == "__main__":
         choice = input()
         if choice == "1" or choice == "2":
             if choice == "1":
-                files_to_decrypt = [select_file()]
-                if files_to_decrypt == [""]:
-                    print("检测到文件选择窗口被关闭")
-                    continue
+                while True:
+                    print("请输入需要解密的文件路径：")
+                    file_to_decrypt = input()
+                    if not os.path.exists(file_to_decrypt):
+                        print("您输入文件不存在，请重新输入！")
+                    elif not os.path.isfile(file_to_decrypt):
+                        print("您输入的不是一个合法的文件目录，请重新输入！")
+                    else:
+                        files_to_decrypt = [file_to_decrypt]
+                        break
             elif choice == "2":
-                dir_to_decrypt = select_directory()
-                if dir_to_decrypt == "":
-                    print("检测到目录选择窗口被关闭")
-                    continue
-                files_to_decrypt = glob.glob(os.path.join(dir_to_decrypt, "*.xm"))
-            print("请选择是否需要设置输出路径：（不设置默认为本程序目录下的output文件夹）")
-            print("1. 设置输出路径")
-            print("2. 不设置输出路径")
-            choice = input()
-            if choice == "1":
-                output_path = select_directory()
-                if output_path == "":
-                    print("检测到目录选择窗口被关闭")
-                    continue
-            elif choice == "2":
-                output_path = "./output"
+                while True:
+                    print("请输入包含需要解密的文件的文件夹路径：")
+                    dir_to_decrypt = input()
+                    if not os.path.exists(dir_to_decrypt):
+                        print("您输入的文件夹不存在，请重新输入！")
+                    elif not os.path.isdir(dir_to_decrypt):
+                        print("您输入的不是一个合法的文件夹目录，请重新输入！")
+                    else:
+                        files_to_decrypt = glob.glob(os.path.join(dir_to_decrypt, "*.xm"))
+                        break
+            while True:
+                print("请选择是否需要设置输出路径：（不设置默认为本程序目录下的output文件夹）")
+                print("1. 设置输出路径")
+                print("2. 不设置输出路径")
+                choice = input()
+                if choice == "1":
+                    print("请输入输出路径：")
+                    output_path = input()
+                    if not os.path.exists(output_path):
+                        print("您输入的文件夹不存在，请重新输入！")
+                    elif not os.path.isdir(output_path):
+                        print("您输入的不是一个合法的文件夹目录，请重新输入！")
+                    else:
+                        break
+                elif choice == "2":
+                    output_path = "./output"
+                    break
+                else:
+                    print("输入错误，请重新输入！")
             for file in files_to_decrypt:
                 decrypt_xm_file(file, output_path)
         elif choice == "3":
